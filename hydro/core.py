@@ -38,19 +38,19 @@ def Eckhardt(series, alpha=.98, BFI=.80):
 def sinuosity(Easting, Northing, length, distance):
     """Calculates sinuosity at each data point. Easting and Northing are lat/longs
     projected into measureable units. Length is distance to calculate the
-    sinuosity on either side of points. Distance is the distance between data points.
+    sinuosity on either side of points. Distance is the stream distance between data points.
     """
     pnts = int(length/distance) # number of points for each reach 
     East = np.array(Easting)
     North = np.array(Northing)
     
-    # Calculate sinuosity
+    # Calculate sinuosity: stream length / straight line distance
     sin = np.zeros(len(East))
     l = len(East)
-    b = pnts * 2 * distance           # calculates straight line distance for pnts in middle
+    b = pnts * 2 * distance           # calculates stream distance for pnts in middle
     for i in range(int(l)):
         if i < pnts: # first few points
-            a = (i + pnts) * distance # calculates straight line distance
+            a = (i + pnts) * distance # calculates stream distance
             sin[i] = a / np.sqrt(np.abs(East[i+pnts] - East[0])**2 
                      + np.abs(North[i+pnts] - North[0])**2)
         elif len(sin)-i < pnts +1: # last few points
