@@ -1,4 +1,12 @@
-import numpy as np
+import numpy as np, pandas as pd
+
+def flow_duration(series):
+    """ Creates the flow duration curve for a flow dataset """
+    fd = pd.Series(series).value_counts()               # frequency of unique values
+    fd.sort_index(inplace=True)                         # sort in order of increasing discharges
+    fd = fd.cumsum()                                    # cumulative sum of frequencies
+    fd = fd.apply(lambda x: 100 - x/fd.max() * 100)     # normalize
+    return fd
 
 def Lyne_Hollick(series, alpha=.925, direction='f'):
     """Recursive digital filter for baseflow separation. Based on Lyne and Hollick, 1979.
