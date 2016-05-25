@@ -18,10 +18,10 @@ def sinuosity(Easting, Northing, length, distance):
             a = (i + pnts) * distance # calculates straight line distance
             sin[i] = a / np.sqrt(np.abs(East[i+pnts] - East[0])**2 
                      + np.abs(North[i+pnts] - North[0])**2)
-        elif len(df)-i < pnts +1: # last few points
-            a = (len(df)-i + pnts) * distance
-            sin[i] = a /np.sqrt(np.abs(East[len(df)-1] - East[i-pnts])**2
-                     + np.abs(North[len(df)-1] - North[i-pnts])**2)
+        elif len(sin)-i < pnts +1: # last few points
+            a = (len(sin)-i + pnts) * distance
+            sin[i] = a /np.sqrt(np.abs(East[len(sin)-1] - East[i-pnts])**2
+                     + np.abs(North[len(sin)-1] - North[i-pnts])**2)
         else: # most points are evaluated here
             sin[i] = b / np.sqrt(np.abs(East[i+pnts] - East[i-pnts])**2
                      + np.abs(North[i+pnts] - North[i-pnts])**2)                           
