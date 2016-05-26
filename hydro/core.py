@@ -21,8 +21,7 @@ def dailyMean(Qseries, Tseries, minInterval):
     return dailyQ, day
 
 def RB_Flashiness(series):
-    """Richards-Baker Flashiness Index for a series of daily mean discharges.
-    """
+    """Richards-Baker Flashiness Index for a series of daily mean discharges."""
     Qsum = np.sum(series)           # sum of daily mean discharges
     Qpath = 0.0
     for i in range(len(series)):
@@ -34,7 +33,7 @@ def RB_Flashiness(series):
 
 
 def flow_duration(series):
-    """ Creates the flow duration curve for a flow dataset """
+    """Creates the flow duration curve for a flow dataset. Plot against index."""
     fd = pd.Series(series).value_counts()               # frequency of unique values
     fd.sort_index(inplace=True)                         # sort in order of increasing discharges
     fd = fd.cumsum()                                    # cumulative sum of frequencies
