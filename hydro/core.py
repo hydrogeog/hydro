@@ -52,7 +52,7 @@ def sinuosity(Easting, Northing, length, distance):
     East = np.array(Easting)
     North = np.array(Northing)
 
-    if pnts * 2 == 1:
+    if pnts / 2 == 1:
         return distance / np.sqrt(np.abs(East[0] - East[1])**2
                  + np.abs(North[0] - North[1])**2)
     else:
@@ -74,6 +74,3 @@ def sinuosity(Easting, Northing, length, distance):
                 sin[i] = b / np.sqrt(np.abs(East[i+pnts] - East[i-pnts])**2
                          + np.abs(North[i+pnts] - North[i-pnts])**2)
         return sin
-
-def test():
-    print("Successful test")
