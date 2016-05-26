@@ -47,12 +47,16 @@ def sinuosity(Easting, Northing, length, distance):
     """Calculates sinuosity at each data point. Easting and Northing are lat/longs
     projected into measureable units. Length is distance to calculate the
     sinuosity on either side of points. Distance is the stream distance between data points.
+
+    To calculate sinuosity for an entire stream, use the start and end points in
+    'Easting' and 'Northing', set length to 2 * stream length, and distance to
+    stream length
     """
     pnts = int(length/distance) # number of points for each reach
     East = np.array(Easting)
     North = np.array(Northing)
 
-    if pnts / 2 == 1:
+    if pnts / 2 == 1:  # if the calculation is only for two points
         return distance / np.sqrt(np.abs(East[0] - East[1])**2
                  + np.abs(North[0] - North[1])**2)
     else:
