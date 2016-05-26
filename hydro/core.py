@@ -27,7 +27,7 @@ def Lyne_Hollick(series, alpha=.925, direction='f'):
             if series[t] - f[t] > series[t]:
                 f[t] = 0
     return np.array(series - f)
- 
+
 def Eckhardt(series, alpha=.98, BFI=.80):
     """Recursive digital filter for baseflow separation. Based on Eckhardt, 2004.
     series = array of discharge measurements
@@ -48,24 +48,29 @@ def sinuosity(Easting, Northing, length, distance):
     projected into measureable units. Length is distance to calculate the
     sinuosity on either side of points. Distance is the stream distance between data points.
     """
-    pnts = int(length/distance) # number of points for each reach 
+    pnts = int(length/distance) # number of points for each reach
     East = np.array(Easting)
     North = np.array(Northing)
-    
-    # Calculate sinuosity: stream length / straight line distance
-    sin = np.zeros(len(East))
-    l = len(East)
-    b = pnts * 2 * distance           # calculates stream distance for pnts in middle
-    for i in range(int(l)):
-        if i < pnts: # first few points
-            a = (i + pnts) * distance # calculates stream distance
-            sin[i] = a / np.sqrt(np.abs(East[i+pnts] - East[0])**2 
-                     + np.abs(North[i+pnts] - North[0])**2)
-        elif len(sin)-i < pnts +1: # last few points
-            a = (len(sin)-i + pnts) * distance
-            sin[i] = a /np.sqrt(np.abs(East[len(sin)-1] - East[i-pnts])**2
-                     + np.abs(North[len(sin)-1] - North[i-pnts])**2)
-        else: # most points are evaluated here
-            sin[i] = b / np.sqrt(np.abs(East[i+pnts] - East[i-pnts])**2
-                     + np.abs(North[i+pnts] - North[i-pnts])**2)                           
-    return sin
+
+    if pnts * 2 == 1:
+        return distance / np.sqrt(np.abs(East[0] - East[1])**2
+                 + np.abs(North[0] - North[1])**2)
+    else:
+
+        # Calculate sinuosity: stream length / straight line distance
+        sin = np.zeros(len(East))
+        l = len(East)
+        b = pnts * 2 * distance           # calculates stream distance for pnts in middle
+        for i in range(int(l)):
+            if i < pnts: # first few points
+                a = (i + pnts) * distance # calculates stream distance
+                sin[i] = a / np.sqrt(np.abs(East[i+pnts] - East[0])**2
+                         + np.abs(North[i+pnts] - North[0])**2)
+            elif len(sin)-i < pnts +1: # last few points
+                a = (len(sin)-i + pnts) * distance
+                sin[i] = a /np.sqrt(np.abs(East[len(sin)-1] - East[i-pnts])**2
+                         + np.abs(North[len(sin)-1] - North[i-pnts])**2)
+            else: # most points are evaluated here
+                sin[i] = b / np.sqrt(np.abs(East[i+pnts] - East[i-pnts])**2
+                         + np.abs(North[i+pnts] - North[i-pnts])**2)
+        return sin
