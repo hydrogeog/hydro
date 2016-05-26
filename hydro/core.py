@@ -1,5 +1,38 @@
 import numpy as np, pandas as pd
 
+def dailyMean(Qseries, Tseries, minInterval):
+    """Takes the daily mean of a set of disharge data
+    Qseries = series of disharge data
+    Tseries = series of corresponding timestamps
+    minInterval = time interval in minutes of the data
+    """
+    minInterval = int(1440/minInterval) # number of readings in a day
+    i=0; n=0; m=minInterval
+    dailyQ = np.zeros(int(len(Qseries)/minInterval)+1)
+    day = []
+    while i < len(Qseries)/minInterval:
+        try:
+            dailyQ[i] = np.mean(Qseries[n:m])           # calculate mean of each day
+            day.append(Tseries[n])                      # append date to list of dates
+            i+=1; n+=minInterval; m+=minInterval        # go to next day
+        except:
+            dailyQ[i] = np.mean(Qseries[n:])           # calculate mean of each day
+            day.append(Tseries[n])                      # append date to list of dates
+    return dailyQ, day
+
+def RB_Flashiness(series):
+    """Richards-Baker Flashiness Index for a series of daily mean discharges.
+    """
+    Qsum = np.sum(series)           # sum of daily mean discharges
+    Qpath = 0.0
+    for i in range(len(series)):
+        if i == 0:
+            Qpath = series[i]       # first entry only
+        else:
+            Qpath += np.abs(series[i] - series[i-1])    # sum the absolute differences of the mean discharges
+    return Qpath/Qsum
+
+
 def flow_duration(series):
     """ Creates the flow duration curve for a flow dataset """
     fd = pd.Series(series).value_counts()               # frequency of unique values
@@ -50,7 +83,7 @@ def sinuosity(Easting, Northing, length, distance):
 
     To calculate sinuosity for an entire stream, use the start and end points in
     'Easting' and 'Northing', set length to 2 * stream length, and distance to
-    stream length
+    stream length.
     """
     pnts = int(length/distance) # number of points for each reach
     East = np.array(Easting)
@@ -64,7 +97,7 @@ def sinuosity(Easting, Northing, length, distance):
         # Calculate sinuosity: stream length / straight line distance
         sin = np.zeros(len(East))
         l = len(East)
-        b = pnts * 2 * distance           # calculates stream distance for pnts in middle
+        b = pnts * 2 * distance           # calculates stream distance for pnts in middle of dataset
         for i in range(int(l)):
             if i < pnts: # first few points
                 a = (i + pnts) * distance # calculates stream distance
