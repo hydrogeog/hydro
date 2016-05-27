@@ -1,10 +1,11 @@
 import numpy as np, pandas as pd
 
 def dailyMean(Qseries, Tseries, minInterval):
-    """Takes the daily mean of a set of disharge data
-    Qseries = series of disharge data
-    Tseries = series of corresponding timestamps
+    """Takes the daily mean of a set of disharge data.
+    Qseries = series of disharge data;
+    Tseries = series of corresponding timestamps;
     minInterval = time interval in minutes of the data
+    Returns daily mean array and day array.
     """
     minInterval = int(1440/minInterval) # number of readings in a day
     i=0; n=0; m=minInterval
@@ -33,7 +34,8 @@ def RB_Flashiness(series):
 
 
 def flow_duration(series):
-    """Creates the flow duration curve for a flow dataset. Plot against index."""
+    """Creates the flow duration curve for a flow dataset. Returns a pandas
+    series whose index is the discharge values and column is exceedance probability."""
     fd = pd.Series(series).value_counts()               # frequency of unique values
     fd.sort_index(inplace=True)                         # sort in order of increasing discharges
     fd = fd.cumsum()                                    # cumulative sum of frequencies
