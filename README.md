@@ -1,5 +1,5 @@
 #hydro
-Tools for analysis of the hydrologic system.
+Tools for quantitative analysis of the hydrologic system.
 
 ##Functions:
 * dailyMean - Takes the daily mean of a set of disharge data.
