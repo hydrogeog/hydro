@@ -1,10 +1,34 @@
 import numpy as np, pandas as pd
 
+def exp_curve(x, a, b):
+    """Exponential curve used for rating curves"""
+    return (a * x**b)
+
+def ratingCurve(discharge, stage):
+    """Computes rating curve based on discharge measurements coupled with stage
+    readings.
+    discharge = array of measured discharges;
+    stage = array of corresponding stage readings;
+    Returns coefficients a, b for the rating curve in the form y = a * x**b
+    """
+    from scipy.optimize import curve_fit
+    popt, pcov = curve_fit(exp_curve, stage, discharge)
+
+    def r_squ():
+        a = 0.0
+        b = 0.0
+        for i, j in zip(discharge, stage):
+            a += (i - exp_curve(j, popt[0], popt[1]))**2
+            b += (i - np.mean(discharge))**2
+        return 1 - a / b
+
+    return popt, r_squ()
+
 def dailyMean(Qseries, Tseries, minInterval):
     """Takes the daily mean of a set of disharge data.
     Qseries = series of disharge data;
     Tseries = series of corresponding timestamps;
-    minInterval = time interval in minutes of the data
+    minInterval = time interval in minutes of the data;
     Returns daily mean array and day array.
     """
     minInterval = int(1440/minInterval) # number of readings in a day
@@ -13,13 +37,13 @@ def dailyMean(Qseries, Tseries, minInterval):
     day = []
     while i < len(Qseries)/minInterval:
         try:
-            dailyQ[i] = np.mean(Qseries[n:m])           # calculate mean of each day
+            dailyQ[i] = np.nanmean(Qseries[n:m])        # calculate mean of each day
             day.append(Tseries[n])                      # append date to list of dates
             i+=1; n+=minInterval; m+=minInterval        # go to next day
         except:
-            dailyQ[i] = np.mean(Qseries[n:])           # calculate mean of each day
-            day.append(Tseries[n])                      # append date to list of dates
-    return dailyQ, day
+            dailyQ[i] = np.nanmean(Qseries[n:])         # last day's mean
+            day.append(Tseries[n])
+    return dailyQ, np.array(day)
 
 def RB_Flashiness(series):
     """Richards-Baker Flashiness Index for a series of daily mean discharges."""
