@@ -107,3 +107,26 @@ ax2.step(flow.Timestamp, flow.Rainfall_in, color='b', label='Rainfall', where='p
 ax2.set_ylim(0,15)
 ax2.invert_yaxis()
 plt.show()
+
+# Flow duration curve
+import probscale # flow duration curves use a probability scale for the x axis
+duration = hydro.flow_duration(flow.Q)
+durationb = hydro.flow_duration(flow.bflow)
+durationc = hydro.flow_duration(flow.Q - flow.bflow)
+
+fig = plt.figure()
+ax1 = fig.add_subplot(1,1,1, axisbg='white')
+ax1.plot(duration, duration.index, 'x', ls='', color='k', label='Total Flow')
+ax1.plot(durationb, durationb.index, '.', markeredgecolor='none', ls='', color='steelblue', label='Baseflow')
+ax1.plot(durationc, durationc.index, '.', markeredgecolor='none', ls='', color='lightblue', label='Runoff')
+
+# set y axis to log scale and x axis to probability scale
+ax1.set_yscale('log')
+ax1.set_xscale('prob')
+plt.xticks([.01,.1,.5,1,2,5,10,20,30,40,50,60,70,80,90,95,98,99,99.5,99.9,99.99],
+           rotation='vertical')
+plt.legend()
+plt.title('Flow Duration Curve')
+plt.ylabel('Flow (cfs)')
+plt.xlabel('Percentage of time flow was equaled or exceeded')
+plt.show()
