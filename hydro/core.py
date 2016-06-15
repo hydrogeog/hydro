@@ -136,3 +136,27 @@ def sinuosity(Easting, Northing, length, distance):
                 sin[i] = b / np.sqrt(np.abs(East[i+pnts] - East[i-pnts])**2
                          + np.abs(North[i+pnts] - North[i-pnts])**2)
         return sin
+
+def Profile_smoothing(elevation):
+    """Removes the 'bumps' present in an elevation profile caused by roads &
+     imperfections in DEMs. Data must be arranged from highest elevation to lowest.
+    """
+    elevation = np.array(elevation)
+    output_elevation = np.ones(len(elevation)); output_elevation[0]=elevation[0]
+    output_elevation[-1] = min(elevation)
+    i=1
+    while i < len(elevation):                    # loops through elevation dataset
+        if elevation[i] > elevation[i-1]:             # if the current value is greater than the previous,
+            j=i
+            while j < len(elevation)-1:          # loop through the remaining data...
+                j = j+1
+                if elevation[j] <= elevation[i-1]:    # to find the next point that is lower or equal to the last datum.
+                    for indx,k in enumerate(range(i, j)):       # changes the incorrect data...
+                        adj = np.linspace(elevation[i-1], elevation[j], num=len(elevation[i:j]), endpoint=False)   # to a linear interp.
+                        output_elevation[k] = adj[indx]
+                    break       # exits if statement
+            i=j-1               # starting point for the next iteration
+        else:
+            output_elevation[i] = elevation[i]   # if the elevation is less than or equal to the previous, that point kept
+        i = i+1                     # keeps the while loop interating to next datum
+    return output_elevation
