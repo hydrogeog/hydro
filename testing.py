@@ -6,6 +6,20 @@ import hydro
 
 data = pd.read_csv("stream.csv")
 
+# Longitudintal profile creation
+adjusted_elevation = hydro.Profile_smoothing(data.ELEVATION)
+
+# plot longitudinal profile
+fig = plt.figure(figsize=(20,3))
+ax1 = fig.add_subplot(1, 1, 1, axisbg='white')
+ax1.plot(data.DISTANCE_FROM_MOUTH, adjusted_elevation,
+         'b-', label='Elevation Profile')
+ax1.invert_xaxis()
+ax1.set_ylabel('Elevation (ft)')                    # y label
+ax1.set_xlabel('Distance from mouth (ft)')          # x label
+plt.title("Longitudinal Profile")       # title
+plt.show()
+
 # Reproject coordinates
 NAD83_GAfeet = pyproj.Proj("+init=EPSG:2239")
 def trans(lon, lat):
