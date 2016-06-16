@@ -142,8 +142,8 @@ def Profile_smoothing(elevation):
      imperfections in DEMs. Data must be arranged from highest elevation to lowest.
     """
     elevation = np.array(elevation)
-    output_elevation = np.ones(len(elevation)); output_elevation[0]=elevation[0]
-    output_elevation[-1] = min(elevation)
+    output_elevation = np.zeros(len(elevation)); output_elevation[0]=elevation[0]
+    elevation[-1] = min(elevation)
     i=1
     while i < len(elevation):                    # loops through elevation dataset
         if elevation[i] > elevation[i-1]:             # if the current value is greater than the previous,
