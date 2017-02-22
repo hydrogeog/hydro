@@ -32,3 +32,7 @@ dailyQ = flowdata.dailyMean()
 # plot daily mean data with 15-minute data
 # this is only intended as a quick plot, not save-quality
 flowdata.plot([dailyQ.day, dailyQ.Q])
+
+# Richards-Baker Flashiness Index
+RB_index = flowdata.RB_Flashiness()
+print(f'Richards-Baker Flashiness: {RB_index:.4f}')

@@ -67,7 +67,6 @@ class RC(object):
         line = np.linspace(min(self.stage), max(self.stage), 100)
         ax1.plot(line, exp_curve(line, self.popt[0], self.popt[1]), color='k')
         plt.show()
-#        plt.savefig("/home/carson/Desktop/fig.png", bbox_inches='tight')
 
 class Discharge(object):
     def __init__(self, time, Q, rain=None):
@@ -83,24 +82,24 @@ class Discharge(object):
         """
         Takes the daily mean of a set of disharge data.
         
-        Qseries = series of disharge data\n
-        Tseries = series of corresponding timestamps\n
-        Returns daily mean array and day array.
+        Returns daily mean and day in a dataframe.
         """
         daily = pd.DataFrame({'Q':self.Q, 'time':self.time})
         daily['day'] = daily.time.apply(lambda x: datetime(x.year, x.month, x.day))
-        daily = daily.groupby(['day'])['Q'].mean()
+        daily = pd.DataFrame(daily.groupby(['day'])['Q'].mean())
+        daily.reset_index(inplace=True)
         return daily
 
     def RB_Flashiness(self):
         """Richards-Baker Flashiness Index for a series of daily mean discharges."""
-        Qsum = np.sum(self.Q)           # sum of daily mean discharges
+        Q = self.dailyMean().Q
+        Qsum = np.sum(Q)           # sum of daily mean discharges
         Qpath = 0.0
-        for i in range(len(self.Q)):
+        for i in range(len(Q)):
             if i == 0:
-                Qpath = self.Q[i]       # first entry only
+                Qpath = Q.iloc[i]       # first entry only
             else:
-                Qpath += np.abs(self.Q[i] - self.Q[i-1])    # sum the absolute differences of the mean discharges
+                Qpath += np.abs(Q.iloc[i] - Q.iloc[i-1])    # sum the absolute differences of the mean discharges
         return Qpath/Qsum
 
 
@@ -182,10 +181,10 @@ class Discharge(object):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, facecolor='#E3E3E3')
         plt.grid(True, which='both', color='w', ls='-', zorder=0)
-        ax1.plot(self.time, self.Q)
+        ax1.plot(self.time, self.Q, label='Series1')
         if type(self.rain) != None:
             ax2 = ax1.twinx()
-            ax2.plot(self.time, self.rain, alpha=.5, c='b', lw=1)
+            ax2.plot(self.time, self.rain, alpha=.5, c='b', lw=1, label='Rain')
             ax2.set_ylim(1, 0)
             ax2.set_ylabel(r'Rain, in')
         ax1.set_ylabel('Discharge, cfs')
@@ -197,8 +196,10 @@ class Discharge(object):
         # add ablity to plot multiple time series
         more = len(addseries)
         while more > 0:
-            ax1.plot(addseries[more-2], addseries[more-1])
+            ax1.plot(addseries[more-2], addseries[more-1], 
+                     label=f'Series{int(len(addseries)/2-more/2 +2)}')
             more -= 2
+        ax1.legend(loc='best')
         plt.show()
 
 
