@@ -69,7 +69,7 @@ class RC(object):
         plt.show()
 
 class Discharge(object):
-    def __init__(self, time, Q, rain=None):
+    def __init__(self, time, Q, rain=[]):
         """
         time: timeseries
         Q: discharge values
@@ -78,28 +78,37 @@ class Discharge(object):
         self.Q = Q
         self.rain = rain
     
-    def dailyMean(self):
+    def dailyQ(self, method='mean'):
         """
-        Takes the daily mean of a set of disharge data.
+        Calculates the daily flow of a set of disharge data.
         
-        Returns daily mean and day in a dataframe.
+        Method specifies the method of aggregating each day -- either by 'mean'
+        or by 'sum'. Default is mean.\n
+        Returns daily flow and day in a dataframe.
         """
         daily = pd.DataFrame({'Q':self.Q, 'time':self.time})
         daily['day'] = daily.time.apply(lambda x: datetime(x.year, x.month, x.day))
-        daily = pd.DataFrame(daily.groupby(['day'])['Q'].mean())
+        if method == 'mean':
+            daily = pd.DataFrame(daily.groupby(['day'])['Q'].mean())
+            daily['meanQ'] = daily['Q']
+            del daily['Q']
+        elif method == 'sum':
+            daily = pd.DataFrame(daily.groupby(['day'])['Q'].sum())
+            daily['sumQ'] = daily['Q']
+            del daily['Q']
         daily.reset_index(inplace=True)
         return daily
 
     def RB_Flashiness(self):
         """Richards-Baker Flashiness Index for a series of daily mean discharges."""
-        Q = self.dailyMean().Q
-        Qsum = np.sum(Q)           # sum of daily mean discharges
+        Q = self.dailyQ().meanQ
+        Qsum = np.sum(Q)      # sum of daily mean discharges
         Qpath = 0.0
         for i in range(len(Q)):
             if i == 0:
-                Qpath = Q.iloc[i]       # first entry only
+                Qpath = Q.iloc[i]   # first entry only
             else:
-                Qpath += np.abs(Q.iloc[i] - Q.iloc[i-1])    # sum the absolute differences of the mean discharges
+                Qpath += np.abs(Q.iloc[i] - Q.iloc[i-1])  # sum the absolute differences of the mean discharges
         return Qpath/Qsum
 
 
@@ -112,12 +121,16 @@ class Discharge(object):
         fd.sort_index(inplace=True)                         # sort in order of increasing discharges
         fd = fd.cumsum()                                    # cumulative sum of frequencies
         fd = fd.apply(lambda x: 100 - x/fd.max() * 100)     # normalize
+        fd = pd.DataFrame(fd.reset_index())
+        fd['exeedance_prob'] = fd['index']; del fd['index']
         
         if plot:
             import probscale # flow duration curves use a probability scale for the x axis
-            fig = plt.figure()
-            ax1 = fig.add_subplot(1,1,1, axisbg='white')
-            ax1.plot(fd, fd.index, 'x', ls='', color='k', label='Total Flow', s=10)
+            fig = plt.figure(figsize=[8, 10])
+            ax1 = fig.add_subplot(111, facecolor='#E3E3E3')
+            plt.grid(True, which='both', color='w', ls='-', zorder=0)
+            ax1.plot(fd['discharge_cfs'], fd['exeedance_prob'], 'x', ls='', 
+                     color='k', label='Total Flow', ms=5)
             
             # set y axis to log scale and x axis to probability scale
             ax1.set_yscale('log')
@@ -139,21 +152,27 @@ class Discharge(object):
         alpha : filter parameter\n
         direction : (f)orward or (r)everse calculation
         """
-        self.Q = np.array(self.Q)
-        f = np.zeros(len(self.Q))
+        # first looks to see if there has alread been a run
+        try:
+            Q = np.array(self.bflow)
+        except:
+            Q = np.array(self.Q)
+        f = np.zeros(len(Q))
         if direction == 'f':
-            for t in np.arange(1,len(self.Q)):
+            for t in np.arange(1,len(Q)):
                 # algorithm
-                f[t] = alpha * f[t-1] + (1 + alpha)/2 * (self.Q[t] - self.Q[t-1])
+                f[t] = alpha * f[t-1] + (1 + alpha)/2 * (Q[t] - Q[t-1])
                 # to prevent negative values
-                if self.Q[t] - f[t] > self.Q[t]:
+                if Q[t] - f[t] > Q[t]:
                     f[t] = 0
         elif direction == 'r':
-            for t in np.arange(len(self.Q)-2, 1, -1):
-                f[t] = alpha * f[t+1] + (1 + alpha)/2 * (self.Q[t] - self.Q[t+1])
-                if self.Q[t] - f[t] > self.Q[t]:
+            for t in np.arange(len(Q)-2, 1, -1):
+                f[t] = alpha * f[t+1] + (1 + alpha)/2 * (Q[t] - Q[t+1])
+                if Q[t] - f[t] > Q[t]:
                     f[t] = 0
-        return np.array(self.Q - f)
+        # adds the baseflow to self variables so it can be called recursively
+        self.bflow = np.array(Q - f) 
+        return np.array(Q - f)
 
     def Eckhardt(self, alpha=.98, BFI=.80):
         """
@@ -162,14 +181,20 @@ class Discharge(object):
         alpha : filter parameter\n
         BFI : BFI_max (maximum baseflow index)
         """
-        self.Q = np.array(self.Q)
-        f = np.zeros(len(self.Q))
-        f[0] = self.Q[0]
-        for t in np.arange(1,len(self.Q)):
+        # first looks to see if there has alread been a run
+        try:
+            Q = np.array(self.bflow)
+        except:
+            Q = np.array(self.Q)
+        f = np.zeros(len(Q))
+        f[0] = Q[0]
+        for t in np.arange(1,len(Q)):
             # algorithm
-            f[t] = ((1 - BFI) * alpha * f[t-1] + (1 - alpha) * BFI * self.Q[t]) / (1 - alpha * BFI)
-            if f[t] > self.Q[t]:
-                f[t] = self.Q[t]
+            f[t] = ((1 - BFI) * alpha * f[t-1] + (1 - alpha) * BFI * Q[t]) / (1 - alpha * BFI)
+            if f[t] > Q[t]:
+                f[t] = Q[t]
+        # adds the baseflow to self variables so it can be called recursively
+        self.bflow = f
         return f
     
     def plot(self, addseries=[], log=True):
@@ -182,7 +207,7 @@ class Discharge(object):
         ax1 = fig.add_subplot(111, facecolor='#E3E3E3')
         plt.grid(True, which='both', color='w', ls='-', zorder=0)
         ax1.plot(self.time, self.Q, label='Series1')
-        if type(self.rain) != None:
+        if len(self.rain) != 0:
             ax2 = ax1.twinx()
             ax2.plot(self.time, self.rain, alpha=.5, c='b', lw=1, label='Rain')
             ax2.set_ylim(1, 0)

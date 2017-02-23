@@ -24,15 +24,38 @@ flow.TimeStamp = pd.to_datetime(flow.TimeStamp)
 
 # convert stage to discharge using rating curve equation from above
 flow['discharge_cfs'] = r_curve.Q(flow.Level_ft)
-# create flowdata object
+# create Discharge object
 flowdata = hydro.Discharge(flow.TimeStamp, flow.discharge_cfs, flow.Rainfall_in)
 # find daily mean discharge
-dailyQ = flowdata.dailyMean()
+dailyMean = flowdata.dailyQ()
 
 # plot daily mean data with 15-minute data
 # this is only intended as a quick plot, not save-quality
-flowdata.plot([dailyQ.day, dailyQ.Q])
+flowdata.plot([dailyMean.day, dailyMean.meanQ])
 
 # Richards-Baker Flashiness Index
 RB_index = flowdata.RB_Flashiness()
 print(f'Richards-Baker Flashiness: {RB_index:.4f}')
+
+# Flow duration curve
+# if plot=True, you need to pip install probscale
+flowdur = flowdata.flow_duration(plot=True)
+
+# Baseflow separation using Lyne_Hollick method
+# 3 forward passes with the digital filter
+flow['LH_bflow'] = flowdata.Lyne_Hollick()
+flow['LH_bflow'] = flowdata.Lyne_Hollick()
+flow['LH_bflow'] = flowdata.Lyne_Hollick()
+flowdata.plot([flow.TimeStamp, flow.LH_bflow], log=False)
+
+# Baseflow separation using Eckhardt method
+# re-initialize discharge object to erase baseflow from above
+flowdata = hydro.Discharge(flow.TimeStamp, flow.discharge_cfs, flow.Rainfall_in)
+flow['E_bflow'] = flowdata.Eckhardt()
+flow['E_bflow'] = flowdata.Eckhardt()
+flow['E_bflow'] = flowdata.Eckhardt()
+flowdata.plot([flow.TimeStamp, flow.E_bflow], log=False)
+
+# flow DataFrame now has discharge and base flow calculated with two different 
+# methods. Plot that DataFrame if you want to compare the methods.
+
