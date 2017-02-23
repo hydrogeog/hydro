@@ -264,9 +264,11 @@ def sinuosity(Easting, Northing, length, distance):
                          + np.abs(North[i+pnts] - North[i-pnts])**2)
         return sin
 
-def Profile_smoothing(elevation):
+def Profile_smoothing(elevation, distance, plot=False):
     """Removes the 'bumps' present in an elevation profile caused by roads &
      imperfections in DEMs. Data must be arranged from highest elevation to lowest.
+     
+     Set plot=True to graph the resulting profile
     """
     elevation = np.array(elevation)
     output_elevation = np.zeros(len(elevation)); output_elevation[0]=elevation[0]
@@ -286,4 +288,15 @@ def Profile_smoothing(elevation):
         else:
             output_elevation[i] = elevation[i]   # if the elevation is less than or equal to the previous, that point kept
         i = i+1                     # keeps the while loop interating to next datum
+        
+    if plot:
+            fig = plt.figure(figsize=(20,3))
+            ax1 = fig.add_subplot(111)
+            ax1.plot(distance, output_elevation, label='Elevation Profile')
+            ax1.invert_xaxis()
+            ax1.set_ylabel('Elevation')                    # y label
+            ax1.set_xlabel('Distance from mouth')          # x label
+            plt.title("Longitudinal Profile")       # title
+            plt.show()
+
     return output_elevation

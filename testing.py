@@ -59,7 +59,7 @@ plt.show()
 sin_total = hydro.sinuosity([data.Easting.iloc[0], data.Easting.iloc[-1]],
                             [data.Northing.iloc[0], data.Northing.iloc[-1]],
                             data['cng_(Feet)'].max()*2, data['cng_(Feet)'].max())
-print("Sinuosity of entire stream: ", sin_total)
+print(f'Sinuosity of entire stream: {sin_total}')
 
 # Load flow data
 flow = pd.read_csv("flow.csv")

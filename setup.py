@@ -6,6 +6,6 @@ setup(name='hydro',
       url='http://github.com/hydropal/hydro',
       author='hydrogeog',
       author_email='capruitt09@gamil.com',
-      license='',
+      license='MIT License',
       packages=['hydro'],
       zip_safe=False)
