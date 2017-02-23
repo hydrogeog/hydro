@@ -2,7 +2,7 @@
 Tools for quantitative analysis of the hydrologic system.
 
 ##Functions:
-* dailyMean - Takes the daily mean of a set of disharge data.
+* dailyQ - Takes the daily mean or daily sum of a set of disharge data.
 * ratingCurve - Computes stage-discharge relation
 * RB_Flashiness - Richards-Baker Flashiness Index for a series of daily mean discharges.
 * flow_duration - Creates the flow duration curve for a flow dataset.
