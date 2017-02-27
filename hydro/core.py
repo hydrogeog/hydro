@@ -47,7 +47,7 @@ class RC(object):
     def plot(self, title='Rating Curve', log=True):
         """ plot the rating curve """
         fig = plt.figure()
-        ax1 = fig.add_subplot(111, facecolor='#E3E3E3')
+        ax1 = fig.add_subplot(111, facecolor=[.95,.95,.95])
         plt.grid(True, which='both', color='w', ls='-', zorder=0)
         ax1.scatter(self.stage, self.discharge, color='k', s=10)
         ax1.set_ylabel(r'Discharge, cfs')
@@ -127,7 +127,7 @@ class Discharge(object):
         if plot:
             import probscale # flow duration curves use a probability scale for the x axis
             fig = plt.figure(figsize=[8, 10])
-            ax1 = fig.add_subplot(111, facecolor='#E3E3E3')
+            ax1 = fig.add_subplot(111, facecolor=[.95,.95,.95])
             plt.grid(True, which='both', color='w', ls='-', zorder=0)
             ax1.plot(fd['discharge_cfs'], fd['exeedance_prob'], 'x', ls='', 
                      color='k', label='Total Flow', ms=5)
@@ -197,14 +197,14 @@ class Discharge(object):
         self.bflow = f
         return f
     
-    def plot(self, addseries=[], log=True):
+    def plot(self, addseries=[], log=True, title='Discharge'):
         """
         Quick plot with or without rain data.\n
         If you wish to plot more than one series to compare them, use addseries 
         to list in order of [time, Q, ...] for each additional series.
         """
         fig = plt.figure()
-        ax1 = fig.add_subplot(111, facecolor='#E3E3E3')
+        ax1 = fig.add_subplot(111, facecolor=[.95,.95,.95])
         plt.grid(True, which='both', color='w', ls='-', zorder=0)
         ax1.plot(self.time, self.Q, label='Series1')
         if len(self.rain) != 0:
@@ -225,6 +225,7 @@ class Discharge(object):
                      label=f'Series{int(len(addseries)/2-more/2 +2)}')
             more -= 2
         ax1.legend(loc='best')
+        plt.title(title)
         plt.show()
 
 
