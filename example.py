@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 22 14:13:47 2017
 
-@author: carson
-"""
 import pandas as pd, numpy as np, pyproj, matplotlib.pyplot as plt
 import hydro 
 
