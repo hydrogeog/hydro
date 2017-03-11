@@ -9,9 +9,9 @@ def exp_curve(x, a, b):
     return (a * x**b)
 
 def r_squ(x, y, pred):
-    """ 
+    """
     Coefficient of determination
-    
+
     x: independent variable\n
     y: dependent variable\n
     pred: predicted values
@@ -28,7 +28,7 @@ class RC(object):
     def __init__(self, stage, discharge):
         """
         Stage-Discharge rating curve
-        
+
         stage: pandas series containing stage values correspoding to discharges\n
         discharge: pandas series containing discharge measurements
         """
@@ -77,11 +77,11 @@ class Discharge(object):
         self.time = time
         self.Q = Q
         self.rain = rain
-    
+
     def dailyQ(self, method='mean'):
         """
         Calculates the daily flow of a set of disharge data.
-        
+
         Method specifies the method of aggregating each day -- either by 'mean'
         or by 'sum'. Default is mean.\n
         Returns daily flow and day in a dataframe.
@@ -123,15 +123,15 @@ class Discharge(object):
         fd = fd.apply(lambda x: 100 - x/fd.max() * 100)     # normalize
         fd = pd.DataFrame(fd.reset_index())
         fd['exeedance_prob'] = fd['index']; del fd['index']
-        
+
         if plot:
             import probscale # flow duration curves use a probability scale for the x axis
             fig = plt.figure(figsize=[8, 10])
             ax1 = fig.add_subplot(111, facecolor=[.95,.95,.95])
             plt.grid(True, which='both', color='w', ls='-', zorder=0)
-            ax1.plot(fd['discharge_cfs'], fd['exeedance_prob'], 'x', ls='', 
+            ax1.plot(fd['discharge_cfs'], fd['exeedance_prob'], 'x', ls='',
                      color='k', label='Total Flow', ms=5)
-            
+
             # set y axis to log scale and x axis to probability scale
             ax1.set_yscale('log')
             ax1.set_xscale('prob') # from import probscale
@@ -147,7 +147,7 @@ class Discharge(object):
     def Lyne_Hollick(self, alpha=.925, direction='f'):
         """
         Recursive digital filter for baseflow separation. Based on Lyne and Hollick, 1979.
-        
+
         series : array of discharge measurements\n
         alpha : filter parameter\n
         direction : (f)orward or (r)everse calculation
@@ -171,7 +171,7 @@ class Discharge(object):
                 if Q[t] - f[t] > Q[t]:
                     f[t] = 0
         # adds the baseflow to self variables so it can be called recursively
-        self.bflow = np.array(Q - f) 
+        self.bflow = np.array(Q - f)
         return np.array(Q - f)
 
     def Eckhardt(self, alpha=.98, BFI=.80):
@@ -196,11 +196,11 @@ class Discharge(object):
         # adds the baseflow to self variables so it can be called recursively
         self.bflow = f
         return f
-    
+
     def plot(self, addseries=[], log=True, title='Discharge'):
         """
         Quick plot with or without rain data.\n
-        If you wish to plot more than one series to compare them, use addseries 
+        If you wish to plot more than one series to compare them, use addseries
         to list in order of [time, Q, ...] for each additional series.
         """
         fig = plt.figure()
@@ -221,7 +221,7 @@ class Discharge(object):
         # add ablity to plot multiple time series
         more = len(addseries)
         while more > 0:
-            ax1.plot(addseries[more-2], addseries[more-1], 
+            ax1.plot(addseries[more-2], addseries[more-1],
                      label=f'Series{int(len(addseries)/2-more/2 +2)}')
             more -= 2
         ax1.legend(loc='best')

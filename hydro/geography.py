@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import numpy as np
+import numpy as np, matplotlib.pyplot as plt
 
 def sinuosity(Easting, Northing, length, distance):
     """Calculates sinuosity at each data point. Easting and Northing are lat/longs
@@ -38,11 +38,11 @@ def sinuosity(Easting, Northing, length, distance):
                          + np.abs(North[i+pnts] - North[i-pnts])**2)
         return sin
 
-def Profile_smoothing(elevation, distance, plot=False):
+def Profile_smoothing(elevation, distance=None, plot=False):
     """Removes the 'bumps' present in an elevation profile caused by roads &
      imperfections in DEMs. Data must be arranged from highest elevation to lowest.
      
-     Set plot=True to graph the resulting profile
+     Set plot=True and define distance to graph the resulting profile
     """
     elevation = np.array(elevation)
     output_elevation = np.zeros(len(elevation)); output_elevation[0]=elevation[0]
