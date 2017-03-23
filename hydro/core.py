@@ -77,6 +77,7 @@ class Discharge(object):
         self.time = time
         self.Q = Q
         self.rain = rain
+        self.bflow = []
 
     def dailyQ(self, method='mean'):
         """
@@ -153,38 +154,45 @@ class Discharge(object):
         direction : (f)orward or (r)everse calculation
         """
         # first looks to see if there has alread been a run
-        try:
+        if len(self.bflow) > 0:
             Q = np.array(self.bflow)
-        except:
+        else:
             Q = np.array(self.Q)
         f = np.zeros(len(Q))
-        if direction == 'f':
+        if direction[0] == 'f':
             for t in np.arange(1,len(Q)):
                 # algorithm
                 f[t] = alpha * f[t-1] + (1 + alpha)/2 * (Q[t] - Q[t-1])
                 # to prevent negative values
                 if Q[t] - f[t] > Q[t]:
                     f[t] = 0
-        elif direction == 'r':
+        elif direction[0] == 'r':
             for t in np.arange(len(Q)-2, 1, -1):
                 f[t] = alpha * f[t+1] + (1 + alpha)/2 * (Q[t] - Q[t+1])
                 if Q[t] - f[t] > Q[t]:
                     f[t] = 0
         # adds the baseflow to self variables so it can be called recursively
         self.bflow = np.array(Q - f)
-        return np.array(Q - f)
+        # calls method again if multiple passes are specified
+        if len(direction) > 1:
+            self.Lyne_Hollick(alpha, direction=direction[1:])
+        
+        return self.bflow
 
-    def Eckhardt(self, alpha=.98, BFI=.80):
+    def Eckhardt(self, alpha=.98, BFI=.80, re=1):
         """
         Recursive digital filter for baseflow separation. Based on Eckhardt, 2004.\n
         series : array of discharge measurements\n
         alpha : filter parameter\n
-        BFI : BFI_max (maximum baseflow index)
+        BFI : BFI_max (maximum baseflow index)\n
+        re : number of times to run filter
         """
+        print('round ' + str(re))
+        print(self.bflow[:5])
         # first looks to see if there has alread been a run
-        try:
+        if len(self.bflow) > 0:
             Q = np.array(self.bflow)
-        except:
+        else:
             Q = np.array(self.Q)
         f = np.zeros(len(Q))
         f[0] = Q[0]
@@ -195,7 +203,12 @@ class Discharge(object):
                 f[t] = Q[t]
         # adds the baseflow to self variables so it can be called recursively
         self.bflow = f
-        return f
+        print(max(self.bflow))
+        # calls method again if multiple passes are specified
+        if re > 1:
+            self.Eckhardt(alpha=alpha, BFI=BFI, re=re-1)
+
+        return self.bflow
 
     def plot(self, addseries=[], log=True, title='Discharge'):
         """

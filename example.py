@@ -39,17 +39,13 @@ flowdur = flowdata.flow_duration(plot=True)
 
 # Baseflow separation using Lyne_Hollick method
 # 3 forward passes with the digital filter
-flow['LH_bflow'] = flowdata.Lyne_Hollick()
-flow['LH_bflow'] = flowdata.Lyne_Hollick()
-flow['LH_bflow'] = flowdata.Lyne_Hollick()
+flow['LH_bflow'] = flowdata.Lyne_Hollick(direction='fff')
 flowdata.plot([flow.TimeStamp, flow.LH_bflow], log=False)
 
 # Baseflow separation using Eckhardt method
 # re-initialize discharge object to erase baseflow from above
 flowdata = hydro.Discharge(flow.TimeStamp, flow.discharge_cfs, flow.Rainfall_in)
-flow['E_bflow'] = flowdata.Eckhardt()
-flow['E_bflow'] = flowdata.Eckhardt()
-flow['E_bflow'] = flowdata.Eckhardt()
+flow['E_bflow'] = flowdata.Eckhardt(re=3)
 flowdata.plot([flow.TimeStamp, flow.E_bflow], log=False)
 
 # flow DataFrame now has discharge and base flow calculated with two different 
